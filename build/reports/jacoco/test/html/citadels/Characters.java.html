@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Characters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Scaffold</a> &gt; <a href="index.source.html" class="el_package">citadels</a> &gt; <span class="el_source">Characters.java</span></div><h1>Characters.java</h1><pre class="source lang-java linenums">package citadels;
+
+import java.util.*;
+
+/**
+ * The {@code Characters} enum represents the roles available in the Citadels game.
+ * Each character has a unique rank and a special ability that affects gameplay.
+ */
+<span class="fc" id="L9">public enum Characters {</span>
+<span class="fc" id="L10">    ASSASSIN(1, &quot;Select another character to kill. The killed character loses their turn.&quot;),</span>
+<span class="fc" id="L11">    THIEF(2, &quot;Select another character to rob. When that character reveals themselves, you immediately steal all of their gold. You cannot rob the Assassin or the killed character.&quot;),</span>
+<span class="fc" id="L12">    MAGICIAN(3, &quot;Either exchange your hand with another player, or discard any number of district cards and draw the same number from the deck (once per turn).&quot;),</span>
+<span class="fc" id="L13">    KING(4, &quot;Gain 1 gold for each yellow (noble) district in your city. Receive the crown token and choose characters first next round.&quot;),</span>
+<span class="fc" id="L14">    BISHOP(5, &quot;Gain 1 gold for each blue (religious) district in your city. Your buildings cannot be destroyed by the Warlord, unless you are killed.&quot;),</span>
+<span class="fc" id="L15">    MERCHANT(6, &quot;Gain 1 gold for each green (trade) district in your city. Also gain 1 extra gold.&quot;),</span>
+<span class="fc" id="L16">    ARCHITECT(7, &quot;Draw 2 extra district cards. You may build up to 3 districts this turn.&quot;),</span>
+<span class="fc" id="L17">    WARLORD(8, &quot;Gain 1 gold for each red (military) district in your city. You may destroy one district by paying 1 less gold than its cost, unless the city has 8 or more districts.&quot;);</span>
+
+    private int rank;
+    private String ability;
+
+    /**
+     * Constructs a {@code Characters} enum instance with a given rank and ability.
+     *
+     * @param rank    the turn order rank of the character
+     * @param ability a description of the character's special ability
+     */
+<span class="fc" id="L28">    Characters(int rank, String ability) {</span>
+<span class="fc" id="L29">        this.rank = rank;</span>
+<span class="fc" id="L30">        this.ability = ability;</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * @return the turn order rank of the character
+     */
+    public int getRank() {
+<span class="fc" id="L37">        return rank;</span>
+    }
+
+    /**
+     * @return the description of the character's special ability
+     */
+    public String getAbility() {
+<span class="fc" id="L44">        return ability;</span>
+    }
+
+    /**
+     * @return a list containing all {@code Characters} in their declared order
+     */
+    public static List&lt;Characters&gt; getCharacters() {
+<span class="fc" id="L51">        return new ArrayList&lt;&gt;(Arrays.asList(values()));</span>
+    }
+
+    /**
+     * Randomly shuffles the list of characters.
+     * &lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; This method creates a shuffled list but does not store or return it.
+     */
+    public static void shuffleDeck() {
+<span class="fc" id="L59">        List&lt;Characters&gt; characters = getCharacters();</span>
+<span class="fc" id="L60">        Collections.shuffle(characters, new Random());</span>
+<span class="fc" id="L61">    }</span>
+
+    /**
+     * Returns the {@code Characters} enum constant with the given name.
+     *
+     * @param name the name of the character (case-insensitive)
+     * @return the {@code Characters} constant, or {@code null} if not found
+     */
+    public static Characters fromName(String name) {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (Characters c : values()) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            if (c.name().equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L72">                return c;</span>
+            }
+        }
+<span class="nc" id="L75">        return null;</span>
+    }
+
+    /**
+     * Returns the {@code Characters} constant with the specified rank.
+     *
+     * @param i the rank to look for
+     * @return the {@code Characters} constant with the given rank, or {@code null} if not found
+     */
+    public static Characters fromRank(int i) {
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        for (Characters c : values()) {</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (c.getRank() == i) {</span>
+<span class="fc" id="L87">                return c;</span>
+            }
+        }
+<span class="nc" id="L90">        return null;</span>
+    }
+
+    /**
+     * Returns the formatted name of the given {@code Characters} constant.
+     * For example, &quot;ASSASSIN&quot; becomes &quot;Assassin&quot;.
+     *
+     * @param c the character enum constant
+     * @return the formatted name
+     */
+    public static String getName(Characters c) {
+<span class="fc" id="L101">        return Character.toUpperCase(c.name().charAt(0)) + c.name().substring(1).toLowerCase();</span>
+    }
+
+    /**
+     * Returns a string representation of the character including its name, rank, and ability.
+     *
+     * @return a formatted string describing the character
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L111">        return getName(this) + &quot; (&quot; + rank + &quot;): &quot; + ability;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

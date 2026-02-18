@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Scaffold</a> &gt; <a href="index.source.html" class="el_package">citadels</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package citadels;
+
+import java.nio.charset.StandardCharsets;
+
+import java.io.*;
+import java.util.*;
+import java.net.*;
+
+public class App{
+	
+	private File cardsFile;
+    private BufferedReader br;
+<span class="nc" id="L13">    private boolean gameRuns = true;</span>
+<span class="nc" id="L14">    private boolean debugMode = false;</span>
+<span class="nc" id="L15">    private Map&lt;String, Card&gt; districtCards = new HashMap&lt;&gt;();</span>
+    private Game game;
+<span class="nc" id="L17">    private static Scanner sc=new Scanner(System.in);</span>
+<span class="nc" id="L18">    private Random r = new Random();</span>
+<span class="nc" id="L19">    private int currentCharacterRank = 0;</span>
+<span class="nc" id="L20">    private List&lt;String&gt; cmd247 = new ArrayList&lt;&gt;(Arrays.asList(&quot;save&quot;, &quot;load&quot;, &quot;debug&quot;, &quot;hand&quot;));</span>
+<span class="nc" id="L21">    private boolean isLoaded = false;</span>
+
+<span class="nc" id="L23">	public App() throws UnsupportedEncodingException {</span>
+        BufferedReader br;
+
+        try {
+            //URL resource = getClass().getResource(&quot;/cards.tsv&quot;);
+<span class="nc" id="L28">            InputStream inputStream = getClass().getResourceAsStream(&quot;/cards.tsv&quot;);</span>
+            
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            if (inputStream == null) {</span>
+<span class="nc" id="L31">                throw new RuntimeException(&quot;cards.tsv not found!&quot;);</span>
+            }
+
+<span class="nc" id="L34">            br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));</span>
+
+            String line;
+<span class="nc" id="L37">            br.readLine(); // skip header</span>
+
+<span class="nc bnc" id="L39" title="All 2 branches missed.">            while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L40">                String[] vals = line.split(&quot;\t&quot;);</span>
+<span class="nc" id="L41">                String color = vals[2];</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">                String txt = vals.length == 5 ? vals[4] : &quot;&quot;;</span>
+<span class="nc" id="L43">                int qty = Integer.parseInt(vals[1]);</span>
+<span class="nc" id="L44">                int cost = Integer.parseInt(vals[3]);</span>
+
+<span class="nc" id="L46">                districtCards.put(vals[0], new Card(vals[0], color, txt, qty, cost));</span>
+<span class="nc" id="L47">            }</span>
+<span class="nc" id="L48">        } catch (IOException e) {</span>
+<span class="nc" id="L49">            throw new RuntimeException(&quot;Failed to read cards.tsv&quot;, e);</span>
+<span class="nc" id="L50">        }</span>
+<span class="nc" id="L51">        this.game = new Game(districtCards);</span>
+<span class="nc" id="L52">	}</span>
+
+    
+    public void runDebug(App app){
+<span class="nc" id="L56">        System.out.println(&quot;Player Character Map:&quot;);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        for(Integer i:app.game.getPlayerCharMap().keySet()){</span>
+<span class="nc" id="L58">            System.out.println(Characters.getName(Characters.fromRank(i))+&quot; : &quot;+app.game.getPlayerCharMap().get(i).debug());</span>
+<span class="nc" id="L59">        }</span>
+<span class="nc" id="L60">        System.out.println(&quot;\nDiscarded Characters: &quot;+app.game.getDiscardedCharacters().size());</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for(Characters c:app.game.getDiscardedCharacters()){</span>
+<span class="nc" id="L62">            System.out.println(Characters.getName(c));</span>
+<span class="nc" id="L63">        }</span>
+<span class="nc" id="L64">    }</span>
+
+
+    @SuppressWarnings(&quot;unused&quot;)
+    public void turnPhase(App app){
+<span class="nc" id="L69">        System.out.println(&quot;================================\nTURN PHASE\n================================\n&quot;);</span>
+        String inp;
+        Player p;
+        Characters[] charList;
+<span class="nc" id="L73">        System.out.println(app.currentCharacterRank+&quot; is the current character rank.&quot; + this.game.getCurrentCharacterRank());</span>
+<span class="nc" id="L74">        runDebug(app);</span>
+<span class="nc" id="L75">        System.out.println(app.isLoaded+&quot; is the game loaded.&quot;);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if(app.isLoaded){</span>
+<span class="nc" id="L77">            charList = Arrays.copyOfRange(Characters.values(), this.game.getCurrentCharacterRank(), Characters.values().length);</span>
+        }
+        else{
+<span class="nc" id="L80">            charList = Characters.values();</span>
+        }
+<span class="nc" id="L82">        System.out.println(&quot;Modded: &quot;+charList.length);</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        for(Characters c:charList){</span>
+<span class="nc" id="L84">            System.out.println(c.getRank()+&quot;: &quot;+Characters.getName(c));</span>
+<span class="nc" id="L85">            currentCharacterRank = c.getRank();</span>
+<span class="nc" id="L86">            System.out.println(currentCharacterRank+&quot; is the current character rank.&quot;);</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            if(game.getDiscardedCharacters().contains(c)){</span>
+<span class="nc" id="L88">                System.out.print(&quot;No one is the &quot;+Characters.getName(c)+&quot;\n&gt; &quot;);</span>
+<span class="nc" id="L89">                inp = sc.next().trim();</span>
+<span class="nc" id="L90">                sc.nextLine();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                while(!inp.equalsIgnoreCase(&quot;t&quot;)){</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                    if(cmd247.contains(inp.split(&quot; &quot;)[0])){</span>
+<span class="nc" id="L93">                        boolean temp = app.commands(app, inp.split(&quot; &quot;));</span>
+<span class="nc" id="L94">                        System.out.print(&quot;&gt; &quot;);</span>
+<span class="nc" id="L95">                        inp = sc.nextLine();</span>
+<span class="nc" id="L96">                    }</span>
+                    else{
+<span class="nc" id="L98">                        System.out.print(&quot;It is not your turn yet. Please enter \'t\' to process turns.\n&gt; &quot;);</span>
+<span class="nc" id="L99">                        inp = sc.nextLine().trim();</span>
+                        //sc.nextLine();
+                    }
+                }
+            }   
+<span class="nc bnc" id="L104" title="All 4 branches missed.">            else if(app.game.getPlayerCharMap().containsKey(c.getRank()) &amp;&amp; app.game.getDeadCharacters().contains(c)){</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">                if(app.game.getPlayerCharMap().get(c.getRank()).getIsCharDead()){   </span>
+<span class="nc" id="L106">                    System.out.println(&quot;Player &quot;+app.game.getPlayerCharMap().get(c.getRank()).getId()+&quot; loses their turn because they were assassinated.&quot;);</span>
+<span class="nc" id="L107">                    inp = sc.nextLine();</span>
+
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                    while(!inp.equalsIgnoreCase(&quot;t&quot;)){</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">                        if(cmd247.contains(inp.split(&quot; &quot;)[0])){</span>
+<span class="nc" id="L111">                            boolean temp = app.commands(app, inp.split(&quot; &quot;));</span>
+<span class="nc" id="L112">                            System.out.print(&quot;&gt; &quot;);</span>
+<span class="nc" id="L113">                            inp = sc.nextLine().trim();</span>
+<span class="nc" id="L114">                        }</span>
+                        else{
+<span class="nc" id="L116">                            System.out.print(&quot;It is not your turn yet. Please enter \'t\' to process turns.\n&gt; &quot;);</span>
+<span class="nc" id="L117">                            inp = sc.nextLine().trim();</span>
+                        }
+                    }
+                }
+            }
+            else{
+<span class="nc" id="L123">                p = app.game.getPlayerCharMap().get(c.getRank());</span>
+<span class="nc" id="L124">                System.out.println(&quot;Player &quot;+p.getId()+&quot; is the &quot;+Characters.getName(c));</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if(p.getId()==1){</span>
+<span class="nc" id="L126">                    System.out.println(&quot;Your turn.&quot;);</span>
+                }    
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                game.charAction(c, p.getId()!=1, p);</span>
+
+                //human code below
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                if(p.getId()==1){</span>
+<span class="nc" id="L132">                    turn(false, p.getId());</span>
+<span class="nc" id="L133">                    boolean ret = true;</span>
+<span class="nc" id="L134">                    int count_build=0;</span>
+                    String cmd;
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                    while(ret){</span>
+<span class="nc" id="L137">                        System.out.print(&quot;&gt; &quot;);</span>
+<span class="nc" id="L138">                        inp = sc.nextLine().trim();</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                        cmd = (inp.indexOf(',')==-1?inp.split(&quot; &quot;):inp.split(&quot;,&quot;))[0];</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">                        if(cmd.equalsIgnoreCase(&quot;build&quot;) &amp;&amp; inp.length()&gt;5){</span>
+<span class="nc" id="L141">                            count_build++;</span>
+                        }
+<span class="nc bnc" id="L143" title="All 4 branches missed.">                        if(cmd.equalsIgnoreCase(&quot;action&quot;) &amp;&amp; p.getCharCard().equalsIgnoreCase(&quot;Magician&quot;)){</span>
+<span class="nc" id="L144">                            System.out.println(&quot;You can use Magician's special ability only once per turn.&quot;);</span>
+<span class="nc" id="L145">                            continue;</span>
+                        }
+<span class="nc bnc" id="L147" title="All 4 branches missed.">                        if(count_build==(p.getCharCard().equalsIgnoreCase(&quot;Architect&quot;)?3:1)){</span>
+<span class="nc" id="L148">                            System.out.println(&quot;You can only build once per turn.&quot;);</span>
+<span class="nc" id="L149">                            continue;</span>
+                        }
+                        else{
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                            ret = commands(app, inp.indexOf(',')==-1?inp.split(&quot; &quot;):inp.split(&quot;,&quot;));</span>
+                        }
+                    }
+<span class="nc" id="L155">                }</span>
+                else{
+<span class="nc" id="L157">                    turn(true, p.getId());</span>
+                }
+<span class="nc" id="L159">                System.out.print(&quot;&gt; &quot;);</span>
+<span class="nc" id="L160">                inp = sc.nextLine().trim();</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                while(!inp.equalsIgnoreCase(&quot;t&quot;)){</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                    if(cmd247.contains(inp.split(&quot; &quot;)[0])){</span>
+<span class="nc" id="L163">                        boolean temp = app.commands(app, inp.split(&quot; &quot;));</span>
+<span class="nc" id="L164">                        System.out.print(&quot;&gt; &quot;);</span>
+<span class="nc" id="L165">                        inp = sc.nextLine().trim();</span>
+<span class="nc" id="L166">                    }</span>
+                    else{
+<span class="nc" id="L168">                        System.out.print(&quot;It is not your turn yet. Please enter \'t\' to process turns.\n&gt; &quot;);</span>
+<span class="nc" id="L169">                        inp = sc.nextLine().trim();</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L174">    }</span>
+
+
+    public void turn(boolean bot, int id){
+        String inp;
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        if(!bot){</span>
+<span class="nc" id="L180">            System.out.print(&quot;Collect 2 gold or draw two cards and pick one [gold/cards]:\n&gt; &quot;);</span>
+        }
+<span class="nc bnc" id="L182" title="All 4 branches missed.">        inp = bot?(this.game.getPlayers().get(id-1).getHand().size()&gt;2?&quot;gold&quot;:&quot;cards&quot;):sc.next();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if(!bot){</span>
+<span class="nc" id="L184">            sc.nextLine();</span>
+        }
+<span class="nc bnc" id="L186" title="All 4 branches missed.">        while(!inp.equalsIgnoreCase(&quot;gold&quot;) &amp;&amp; !inp.equalsIgnoreCase(&quot;cards&quot;)){</span>
+<span class="nc" id="L187">            System.out.print(&quot;Choose a valid option [gold/cards]\n&gt; &quot;);</span>
+<span class="nc" id="L188">            inp = sc.nextLine().trim();</span>
+        }
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if(!bot){</span>
+<span class="nc" id="L191">            System.out.println(&quot;You chose &quot;+inp+&quot;.&quot;);</span>
+        }
+<span class="nc" id="L193">        game.playerTurn(id, inp);</span>
+<span class="nc" id="L194">    }</span>
+
+
+    public boolean commands(App app, String[] cmd){
+<span class="nc bnc" id="L198" title="All 12 branches missed.">        switch (cmd[0]) {</span>
+                case &quot;hand&quot;:
+<span class="nc" id="L200">                    app.game.displayHand();</span>
+<span class="nc" id="L201">                    break;</span>
+                
+                case &quot;gold&quot;:
+<span class="nc" id="L204">                    app.game.displayGold();</span>
+<span class="nc" id="L205">                    break;</span>
+                
+                case &quot;build&quot;:
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                    if(cmd.length&gt;1){</span>
+<span class="nc" id="L209">                        app.game.buildDistrict(cmd[1]);</span>
+                    }
+                    else{
+<span class="nc" id="L212">                        System.out.println(&quot;Specify the card index to build.&quot;);</span>
+                    }
+<span class="nc" id="L214">                    break;</span>
+
+                case &quot;citadel&quot;:
+                case &quot;city&quot;:
+                case &quot;list&quot;:
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                    app.game.displayCity(cmd.length==1?&quot;1&quot;:cmd[1]);</span>
+<span class="nc" id="L220">                    break;   </span>
+                
+                case &quot;action&quot;:
+<span class="nc" id="L223">                    app.game.performAction(cmd, app.game.getPlayers().get(0));</span>
+<span class="nc" id="L224">                    break;</span>
+
+                case &quot;info&quot;:
+                    //two cases here one for purple building in hand and one for character
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                    if(cmd.length&gt;1){</span>
+<span class="nc" id="L229">                        app.game.showInfo(cmd[1]);</span>
+                    }
+                    else{
+<span class="nc" id="L232">                        System.out.println(&quot;Specify a character or card index.&quot;);</span>
+                    }
+<span class="nc" id="L234">                    break;</span>
+                
+                case &quot;end&quot;:
+<span class="nc" id="L237">                    app.game.endTurn();</span>
+<span class="nc" id="L238">                    break;</span>
+
+                case &quot;all&quot;:
+<span class="nc" id="L241">                    app.game.displayAll();</span>
+<span class="nc" id="L242">                    break;   </span>
+                
+                case &quot;save&quot;:
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                    if(cmd.length&gt;1){</span>
+<span class="nc" id="L246">                        System.out.println(&quot;Save|current character rank: &quot;+app.currentCharacterRank);</span>
+<span class="nc" id="L247">                        app.game.saveGame(cmd[1], app.currentCharacterRank);</span>
+<span class="nc" id="L248">                        System.out.println(&quot;Do you wish to Continue the game. Enter your choice [yes/no]&quot;);</span>
+<span class="nc" id="L249">                        String inp = sc.nextLine();</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">                        while(!inp.equalsIgnoreCase(&quot;yes&quot;)){</span>
+<span class="nc bnc" id="L251" title="All 2 branches missed.">                            if(inp.equalsIgnoreCase(&quot;no&quot;)){</span>
+<span class="nc" id="L252">                                System.exit(0);</span>
+                            }
+<span class="nc" id="L254">                            System.out.print(&quot;Please choose a valid option [yes/no].\n&gt; &quot;);</span>
+<span class="nc" id="L255">                            inp = sc.nextLine();</span>
+                        }
+<span class="nc" id="L257">                    }</span>
+                    else{
+<span class="nc" id="L259">                        System.out.println(&quot;Please specify a filename to save game.&quot;);</span>
+                    }
+<span class="nc" id="L261">                    break;</span>
+
+                case &quot;load&quot;:
+<span class="nc bnc" id="L264" title="All 2 branches missed.">                    if(cmd.length&gt;1){</span>
+<span class="nc" id="L265">                        app.game = app.game.loadGame(cmd[1], app.districtCards);</span>
+<span class="nc bnc" id="L266" title="All 2 branches missed.">                        isLoaded = app.game!=null;</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                        while(!isLoaded){</span>
+<span class="nc" id="L268">                            System.out.print(&quot;To retry enter (a) and to start a new game enter (b). Choose your option [a/b]\n&gt; &quot;);</span>
+<span class="nc" id="L269">                            String inp = sc.nextLine();</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                            if(inp.equalsIgnoreCase(&quot;a&quot;)){</span>
+<span class="nc" id="L271">                                System.out.print(&quot;Enter filename,\n&gt; &quot;);</span>
+<span class="nc" id="L272">                                inp = sc.nextLine();</span>
+<span class="nc" id="L273">                                app.game = app.game.loadGame(inp, app.districtCards);</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">                                isLoaded = app.game!=null;</span>
+                            }
+<span class="nc bnc" id="L276" title="All 2 branches missed.">                            else if(inp.equalsIgnoreCase(&quot;b&quot;)){</span>
+<span class="nc" id="L277">                                break;</span>
+                            }
+                            else{
+<span class="nc" id="L280">                                System.out.println(&quot;Choose a valid option.&quot;);</span>
+                            }
+<span class="nc" id="L282">                        }</span>
+                    }
+                    else{
+<span class="nc" id="L285">                        System.out.println(&quot;Please specify a filename to load game.&quot;);</span>
+                    }
+<span class="nc" id="L287">                    break;</span>
+                
+                case &quot;debug&quot;:
+                    //where npcs card will be visible on their turn
+<span class="nc bnc" id="L291" title="All 2 branches missed.">                    app.debugMode = !app.debugMode; //for turning it on or off when the command is entered</span>
+<span class="nc" id="L292">                    app.game.setDebugMode(app.debugMode);</span>
+<span class="nc bnc" id="L293" title="All 4 branches missed.">                    System.out.println((app.debugMode?&quot;Enabled&quot;:&quot;Disabled&quot;)+&quot; debug mode.&quot;+(app.debugMode?&quot; You can now see all player's hands.&quot;:&quot;You will no longer see all player\'s hands.&quot;));</span>
+<span class="nc" id="L294">                    break;</span>
+                
+                case &quot;help&quot;:
+                default:
+<span class="nc" id="L298">                    app.game.help();</span>
+                    break;
+            }
+<span class="nc bnc" id="L301" title="All 2 branches missed.">            return !(cmd[0].equalsIgnoreCase(&quot;end&quot;));</span>
+    }
+
+    public static void main(String[] args) throws UnsupportedEncodingException {
+<span class="nc" id="L305">        App app = new App();</span>
+        
+<span class="nc" id="L307">        int playerCount = 0;</span>
+<span class="nc" id="L308">        System.out.print(&quot;Do you wish to load a previous game? [yes/no]\n&gt; &quot;);</span>
+<span class="nc" id="L309">        String inp = sc.nextLine().trim();</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if(inp.equalsIgnoreCase(&quot;yes&quot;)){</span>
+<span class="nc" id="L311">            System.out.print(&quot;Enter filename.\n&gt; &quot;);</span>
+<span class="nc" id="L312">            inp = sc.nextLine().trim();</span>
+<span class="nc" id="L313">            Game temp = app.game.loadGame(inp, app.districtCards); </span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">            app.isLoaded = temp!=null;</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">            if(temp!=null){</span>
+<span class="nc" id="L316">                app.game = temp;</span>
+<span class="nc" id="L317">                app.isLoaded = true;</span>
+<span class="nc" id="L318">                app.currentCharacterRank = app.game.getCurrentCharacterRank();</span>
+                // app.game.setGlobal(temp);
+            }
+            else{
+<span class="nc" id="L322">                app.isLoaded = false;</span>
+            }
+        }
+
+<span class="nc bnc" id="L326" title="All 2 branches missed.">        if(app.isLoaded==false){</span>
+            while(true){
+<span class="nc" id="L328">                System.out.print(&quot;Enter how many players [4-7]:\n&gt; &quot;);</span>
+<span class="nc" id="L329">                playerCount = sc.nextInt();</span>
+<span class="nc bnc" id="L330" title="All 4 branches missed.">                if(playerCount&gt;3 &amp;&amp; playerCount&lt;8){</span>
+<span class="nc" id="L331">                    break;</span>
+                }
+                else{
+<span class="nc" id="L334">                    System.out.println(&quot;Invalid number try again.&quot;);</span>
+                }
+            }            
+            
+<span class="nc" id="L338">            System.out.println(&quot;Shuffling deck...&quot;);</span>
+<span class="nc" id="L339">            System.out.println(&quot;Adding characters...&quot;);</span>
+<span class="nc" id="L340">            System.out.println(&quot;Dealing cards...&quot;);</span>
+<span class="nc" id="L341">            System.out.println(&quot;Starting Citadels with &quot;+playerCount+&quot; players...\nYou are player 1\n&quot;);</span>
+<span class="nc" id="L342">            app.game.begin(playerCount);</span>
+        }
+
+<span class="nc" id="L345">        int roundCounter = 0;</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        while(app.gameRuns){</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">            if(roundCounter&gt;0){</span>
+<span class="nc" id="L348">                app.game.begin(playerCount);</span>
+<span class="nc" id="L349">                app.isLoaded = false; //resetting the loaded state for the next round</span>
+            }
+<span class="nc" id="L351">            app.turnPhase(app);</span>
+<span class="nc" id="L352">            System.out.println(&quot;turn phase ended moving to process round.&quot;);</span>
+<span class="nc bnc" id="L353" title="All 2 branches missed.">            app.gameRuns = !app.game.processesRound();</span>
+<span class="nc" id="L354">            app.game.setGameEnded(app.gameRuns);</span>
+<span class="nc" id="L355">            roundCounter++;</span>
+        }
+<span class="nc" id="L357">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

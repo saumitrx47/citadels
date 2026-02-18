@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Scaffold</a> &gt; <a href="index.source.html" class="el_package">citadels</a> &gt; <span class="el_source">GameState.java</span></div><h1>GameState.java</h1><pre class="source lang-java linenums">package citadels;
+
+import java.util.*;
+
+/**
+ * The {@code GameState} class represents the current state of the Citadels game.
+ * It contains information about players, the deck, round number, crown holder,
+ * and whether the game has ended.
+ */
+public class GameState {
+    private List&lt;Player&gt; players;
+    private Deck deck;
+    private int currentCharacterRank;
+    private int crownHolder;
+    private boolean gameEnded;
+    private int round;
+
+    /**
+     * Constructs a {@code GameState} with the given number of players, card data,
+     * crown position, round number, and current character rank.
+     *
+     * @param playerCount the number of players in the game
+     * @param cD a mapping of card names to {@code Card} objects (used to initialize the deck)
+     * @param cP the player ID of the current crown holder
+     * @param round the current round number
+     * @param currentCharacterRank the character rank currently in play
+     */
+<span class="fc" id="L28">    public GameState(int playerCount, Map&lt;String, Card&gt; cD, int cP, int round, int currentCharacterRank) {</span>
+<span class="fc" id="L29">        this.players = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (int i = 1; i &lt;= playerCount; i++) {</span>
+<span class="fc" id="L31">            this.players.add(new Player(i));</span>
+        }
+<span class="fc" id="L33">        this.deck = new Deck(cD);</span>
+<span class="fc" id="L34">        this.deck.shuffleDeck();</span>
+<span class="fc" id="L35">        this.crownHolder = cP;</span>
+<span class="fc" id="L36">        this.currentCharacterRank = currentCharacterRank;</span>
+<span class="fc" id="L37">        this.gameEnded = false;</span>
+<span class="fc" id="L38">        this.round = round;</span>
+<span class="fc" id="L39">    }</span>
+
+    /**
+     * @return the list of players in the game
+     */
+    public List&lt;Player&gt; getPlayers() {
+<span class="fc" id="L45">        return this.players;</span>
+    }
+
+    /**
+     * @return the rank of the current character in play
+     */
+    public int getCurrentCharacterRank() {
+<span class="fc" id="L52">        return this.currentCharacterRank;</span>
+    }
+
+    /**
+     * @return the total number of players in the game
+     */
+    public int getPlayerCount() {
+<span class="nc" id="L59">        return this.players.size();</span>
+    }
+
+    /**
+     * @return the player ID of the current crown holder
+     */
+    public int getCrownHolder() {
+<span class="fc" id="L66">        return this.crownHolder;</span>
+    }
+
+    /**
+     * @return the deck of district cards used in the game
+     */
+    public Deck getDeck() {
+<span class="nc" id="L73">        return this.deck;</span>
+    }
+
+    /**
+     * @return the current round number
+     */
+    public int getRound() {
+<span class="fc" id="L80">        return this.round;</span>
+    }
+
+    /**
+     * @return {@code true} if the game has ended, otherwise {@code false}
+     */
+    public boolean isGameEnded() {
+<span class="nc" id="L87">        return gameEnded;</span>
+    }
+
+    /**
+     * Marks the game as ended.
+     */
+    public void endGame() {
+<span class="nc" id="L94">        this.gameEnded = true;</span>
+<span class="nc" id="L95">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
